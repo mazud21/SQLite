@@ -34,7 +34,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     TextView tvNoSales, tvNamaSales;
-    ArrayList salesList;
+    ArrayList<String> salesList;
 
     ListView listView;
     Database dbSQ;
@@ -57,32 +57,17 @@ public class MainActivity extends AppCompatActivity {
         edsales = findViewById(R.id.edsales);
         btnSubmit = findViewById(R.id.btnSubmit);
 
-        edsales.setOnKeyListener((v, keyCode, event) -> {
-            if (keyCode == KeyEvent.KEYCODE_ENTER) {
-                //get_sales(edsales.getText().toString(),api.key);
-            }
-            return false;
-        });
-        edsales.setOnItemClickListener((parent, view, position, rowId) -> {
-            String selection = (String) parent.getItemAtPosition(position);
-            tvNamaSales.setText(selection);
-            //tvNoSales.setText(s);
-            //get_sales(edsales.getText().toString(),api.key);
-        });
-
         Cursor cur = sqLiteDatabase.rawQuery("SELECT COUNT(*) FROM sales", null);
         if (cur != null) {
             cur.moveToFirst();                       // Always one row returned.
+            //kalau sudah terisi
+            //fungsi untuk load data tabel sales sqlite
             loadSales();
             if (cur.getInt (0) == 0) {    // Zero count means empty table.
+                //jika data tabel sales belum terisi
                 getSalesAll(sqLiteDatabase);
             }
         }
-
-        //if data tabel sales belum terisi
-        //getSalesAll(sqLiteDatabase);
-        //else
-        //loadSales();
 
         btnSubmit.setOnClickListener(v -> {
             //get_sales(edsales.getText().toString(),api.key);
@@ -92,15 +77,28 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadSales(){
 
+        salesList = new ArrayList<>();
+
         //pengisian list dari database sqlite
         salesList = dbSQ.fetchData();
-        //setting list data ke adapter
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item, salesList);
-        //setting list data ke autocomplete
-        edsales.setAdapter(adapter);
 
-        edsales.setThreshold(1);
-        edsales.setTextColor(Color.BLACK);
+        //setting list data ke adapter
+        edsales.setAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_selectable_list_item, salesList));
+
+        edsales.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                //get_sales(edsales.getText().toString(),api.key);
+            }
+            return false;
+        });
+        edsales.setOnItemClickListener((parent, view, position, rowId) -> {
+            String selection = (String) parent.getItemAtPosition(position);
+
+            tvNamaSales.setText(selection.substring(0, selection.indexOf("-")));
+            tvNoSales.setText(selection.substring(selection.lastIndexOf("-")+1));
+
+            Log.d("TAG_SALES_NO", "loadSales: "+selection.substring(selection.lastIndexOf("-")));
+        });
     }
 
     private void getSalesAll(SQLiteDatabase sqlite) {
@@ -136,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("TAG_SALES_ALL", "onResponse: " + e.toString());
             }
 
-            //pengisian list dari database sqlite
+            /*//pengisian list dari database sqlite
             salesList = dbSQ.fetchData();
             //setting list data ke adapter
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item, salesList);
@@ -144,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
             edsales.setAdapter(adapter);
 
             edsales.setThreshold(1);
-            edsales.setTextColor(Color.BLACK);
+            edsales.setTextColor(Color.BLACK);*/
 
         }, error -> {
             Log.d("TAG_SALES_ERROR", "onResponse: " + error.toString());

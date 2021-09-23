@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -31,12 +32,9 @@ public class Database extends SQLiteOpenHelper {
         values.put("SaANo", SaANo);
         values.put("SaNm", SaNm);
         values.put("SaLsUsr", SaLsUsr);
-        /*String q = "insert into sales(SaANo, SaNm, SaLsUsr) values('" +
-                SaANo + "','" +
-                SaNm + "','" +
-                SaLsUsr + "')";*/
+
         sqLiteDatabase.insert("sales", null, values);
-        //sqLiteDatabase.execSQL(q);
+
     }
 
     public void updateData(String SaANo, String SaNm, String SaLsUsr) {
@@ -52,29 +50,16 @@ public class Database extends SQLiteOpenHelper {
 
     public ArrayList fetchData() {
         ArrayList<String> stringArrayList = new ArrayList<String>();
-        String fetchdata = "select * from sales";
+        String fetchdata = "select SaNm || '-' || SaANo from sales";
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
         Cursor cursor = sqLiteDatabase.rawQuery(fetchdata, null);
         if (cursor.moveToFirst()) {
             do {
                 stringArrayList.add(cursor.getString(0));
-                stringArrayList.add(cursor.getString(1));
-                stringArrayList.add(cursor.getString(2));
+
             } while (cursor.moveToNext());
         }
         return stringArrayList;
-    }
-
-    public void checkDataSales(String SaANo, String SaNm, String SaLsUsr){
-        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-        Cursor cur = sqLiteDatabase.rawQuery("SELECT COUNT(*) FROM sales", null);
-        if (cur != null) {
-            cur.moveToFirst();                       // Always one row returned.
-
-            if (cur.getInt (0) == 0) {    // Zero count means empty table.
-                insertData(SaANo, SaNm, SaLsUsr);
-            }
-        }
     }
 
 }
