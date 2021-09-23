@@ -33,8 +33,9 @@ public class SplashScreen extends AppCompatActivity {
 
         //START config SQLite
         dbSQ = new Database(SplashScreen.this);
+        SQLiteDatabase sqLiteDatabase = dbSQ.getWritableDatabase();
 
-        getSalesAll();
+        getSalesAll(sqLiteDatabase);
         //END config SQLite
 
         button = findViewById(R.id.btnNext);
@@ -46,9 +47,11 @@ public class SplashScreen extends AppCompatActivity {
 
     }
 
-    private void getSalesAll() {
+    private void getSalesAll(SQLiteDatabase sqLiteDatabase) {
+
+        Cursor cur = sqLiteDatabase.rawQuery("SELECT COUNT(*) FROM sales", null);
+
         StringRequest stringRequest = new StringRequest(Request.Method.POST, "http://192.168.50.2/api/getsalesall/", response -> {
-            //mProgressDialog.show();
 
             try {
                 JSONObject jsonObject = new JSONObject(response);
@@ -62,9 +65,6 @@ public class SplashScreen extends AppCompatActivity {
                     String SaNm = jsonObject1.getString("SaNm");
                     String SaLsUsr = jsonObject1.getString("SaLsUsr");
 
-                    dbSQ.insertData(SaANo, SaNm, SaLsUsr);
-
-                    /*Cursor cur = sqlite.rawQuery("SELECT COUNT(*) FROM sales", null);
                     if (cur != null) {
                         cur.moveToFirst(); // Always one row returned.
                         //kalau sudah terisi, panggil fungsi update
@@ -73,7 +73,7 @@ public class SplashScreen extends AppCompatActivity {
                             //jika data tabel sales belum terisi, maka lakukan insert data
                             dbSQ.insertData(SaANo, SaNm, SaLsUsr);
                         }
-                    }*/
+                    }
 
                 }
             } catch (JSONException e) {

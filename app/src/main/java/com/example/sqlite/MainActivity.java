@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     TextView tvNoSales, tvNamaSales;
     ArrayList<String> salesList;
 
-    ListView listView;
     Database dbSQ;
 
     AutoCompleteTextView edsales;
@@ -48,8 +47,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         dbSQ = new Database(MainActivity.this);
-        // this.deleteDatabase("sq_db.db");
-        SQLiteDatabase sqLiteDatabase = dbSQ.getWritableDatabase();
 
         tvNoSales = findViewById(R.id.tvNoSales);
         tvNamaSales = findViewById(R.id.tvNamaSales);
@@ -57,17 +54,7 @@ public class MainActivity extends AppCompatActivity {
         edsales = findViewById(R.id.edsales);
         btnSubmit = findViewById(R.id.btnSubmit);
 
-        Cursor cur = sqLiteDatabase.rawQuery("SELECT COUNT(*) FROM sales", null);
-        if (cur != null) {
-            cur.moveToFirst();                       // Always one row returned.
-            //kalau sudah terisi
-            //fungsi untuk load data tabel sales sqlite
-            loadSales();
-            if (cur.getInt (0) == 0) {    // Zero count means empty table.
-                //jika data tabel sales belum terisi
-                getSalesAll(sqLiteDatabase);
-            }
-        }
+        loadSales();
 
         btnSubmit.setOnClickListener(v -> {
             //get_sales(edsales.getText().toString(),api.key);
@@ -99,63 +86,5 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d("TAG_SALES_NO", "loadSales: "+selection.substring(selection.lastIndexOf("-")));
         });
-    }
-
-    private void getSalesAll(SQLiteDatabase sqlite) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, "http://192.168.50.2/api/getsalesall/", response -> {
-            //mProgressDialog.show();
-
-            try {
-                JSONObject jsonObject = new JSONObject(response);
-                JSONArray jsonArray = jsonObject.getJSONArray("data");
-
-                Log.d("TAG_SALES_ALL", "onResponse: " + jsonObject);
-
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                    String SaANo = jsonObject1.getString("SaANo");
-                    String SaNm = jsonObject1.getString("SaNm");
-                    String SaLsUsr = jsonObject1.getString("SaLsUsr");
-
-                    dbSQ.insertData(SaANo, SaNm, SaLsUsr);
-                    /*String query = "select * from sales";
-                    try (Cursor cursor = sqlite.rawQuery(query, null)) {
-                        if(cursor.getCount()>0) {
-                            dbSQ.updateData(SaANo, SaNm, SaLsUsr);
-                        } else {
-                            dbSQ.insertData(SaANo, SaNm, SaLsUsr);
-                        }
-
-                    }*/
-
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-                Log.d("TAG_SALES_ALL", "onResponse: " + e.toString());
-            }
-
-            /*//pengisian list dari database sqlite
-            salesList = dbSQ.fetchData();
-            //setting list data ke adapter
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_item, salesList);
-            //setting list data ke autocomplete
-            edsales.setAdapter(adapter);
-
-            edsales.setThreshold(1);
-            edsales.setTextColor(Color.BLACK);*/
-
-        }, error -> {
-            Log.d("TAG_SALES_ERROR", "onResponse: " + error.toString());
-        }) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("key", "suksesmandiri96");
-                params.put("ip", "");
-                return params;
-            }
-        };
-        Volley.newRequestQueue(getBaseContext()).add(stringRequest);
-
     }
 }
